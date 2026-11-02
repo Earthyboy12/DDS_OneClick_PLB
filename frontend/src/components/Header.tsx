@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ titleTh, titleEn }) => {
   const [downloadingPack, setDownloadingPack] = useState(false);
   const [fontScale, setFontScale] = useState<FontScale>(() => {
     const saved = localStorage.getItem('dds_font_scale') as FontScale | null;
-    return saved && ['normal', 'large', 'xlarge'].includes(saved) ? saved : 'large';
+    return saved && ['normal', 'large', 'xlarge'].includes(saved) ? saved : 'normal';
   });
 
   useEffect(() => {

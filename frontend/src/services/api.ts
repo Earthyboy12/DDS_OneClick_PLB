@@ -226,7 +226,13 @@ export async function getOverview(): Promise<OverviewMeasures> {
   return res.json();
 }
 
-export async function getTimeEpicurve(): Promise<{
+let epicurveCache: { data: any; timestamp: number } | null = null;
+
+export function clearEpicurveCache(): void {
+  epicurveCache = null;
+}
+
+export async function getTimeEpicurve(forceRefresh: boolean = false): Promise<{
   weeks: WeekPoint[];
   year_boundaries?: Array<{
     epi_year: number;
@@ -268,9 +274,14 @@ export async function getTimeEpicurve(): Promise<{
   scope_name_th?: string;
   scope_name_en?: string;
 }> {
+  if (!forceRefresh && epicurveCache && Date.now() - epicurveCache.timestamp < 60000) {
+    return epicurveCache.data;
+  }
   const res = await fetch(`${API_BASE}/time/epicurve`);
   if (!res.ok) throw new Error('Failed to fetch weekly epidemic series');
-  return res.json();
+  const data = await res.json();
+  epicurveCache = { data, timestamp: Date.now() };
+  return data;
 }
 
 export async function getDistrictsSummary(useIllness?: boolean): Promise<{

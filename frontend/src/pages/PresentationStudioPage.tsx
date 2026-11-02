@@ -77,7 +77,7 @@ export const PresentationStudioPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Studio Header Card */}
-      <div className="bg-white rounded-2xl border-2 border-slate-900 p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <h3 className="font-extrabold text-slate-950 text-base">
@@ -181,7 +181,7 @@ export const PresentationStudioPage: React.FC = () => {
         {/* Right Column: Workbench & Live 4K Slide Preview (8 cols) */}
         <div className="lg:col-span-8 space-y-4">
           {/* Controls Bar */}
-          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex flex-wrap items-center gap-2.5">
               {/* Graph Language Selector (TH / EN) */}
               <div className="flex items-center bg-slate-100 border border-slate-900 p-1 rounded-lg">
@@ -269,7 +269,7 @@ export const PresentationStudioPage: React.FC = () => {
               <select
                 value={exportFormat}
                 onChange={(e) => setExportFormat(e.target.value as any)}
-                className="px-2.5 py-1.5 rounded-lg border-2 border-slate-900 bg-white text-slate-900 font-bold focus:outline-none"
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200/90 bg-white text-slate-900 font-bold focus:outline-none"
               >
                 <option value="png">PNG (3840×2160 4K)</option>
                 <option value="svg">Vector SVG</option>
@@ -282,7 +282,7 @@ export const PresentationStudioPage: React.FC = () => {
               <button
                 onClick={() => setPreviewKey(Date.now())}
                 title="Refresh Preview"
-                className="p-1.5 rounded-lg border-2 border-slate-900 hover:bg-slate-100 text-slate-900"
+                className="p-1.5 rounded-lg border border-slate-200/90 hover:bg-slate-100 text-slate-900"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
@@ -303,7 +303,7 @@ export const PresentationStudioPage: React.FC = () => {
 
           {/* Contextual Level & Metric Controls for Figure 2 and Figure 8 */}
           {(selectedFig?.id === 2 || selectedFig?.id === 8) && (
-            <div className="bg-blue-50 border-2 border-slate-900 p-3.5 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="bg-blue-50 border border-slate-200/90 p-3.5 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2 font-extrabold text-slate-950">
                 <Layers className="w-4 h-4 text-slate-900" />
                 <span>
@@ -385,7 +385,7 @@ export const PresentationStudioPage: React.FC = () => {
           )}
 
           {/* Slide Preview Frame */}
-          <div className="bg-slate-900 rounded-2xl p-4 shadow-md border-2 border-slate-900 flex flex-col items-center justify-center min-h-[380px] relative">
+          <div className="bg-slate-900 rounded-2xl p-4 shadow-md border border-slate-200/90 flex flex-col items-center justify-center min-h-[380px] relative">
             <div className="w-full flex items-center justify-between text-slate-300 text-xs px-2 mb-2 font-mono font-bold">
               <span>
                 Slide 0{selectedFig?.id} ({figLang.toUpperCase()}): {figLang === 'th' ? selectedFig?.name_th : selectedFig?.name_en}
@@ -412,7 +412,7 @@ export const PresentationStudioPage: React.FC = () => {
           </div>
 
           {/* Custom Labels & Captions */}
-          <div className="bg-white rounded-2xl border-2 border-slate-900 p-5 shadow-xs space-y-3 text-xs">
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3 text-xs">
             <div className="flex items-center justify-between font-extrabold text-slate-900">
               <span className="flex items-center gap-1.5">
                 <Settings className="w-4 h-4 text-slate-900" />

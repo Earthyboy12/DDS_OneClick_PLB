@@ -12,6 +12,7 @@ import {
   updateActiveFilters as apiUpdateFilters,
   purgeSession as apiPurgeSession,
   generateSyntheticData,
+  clearEpicurveCache,
 } from '../services/api';
 
 const DEFAULT_FILTERS: ActiveFilters = {
@@ -115,7 +116,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (fltRes?.reference_provinces) {
           setReferenceProvinces(fltRes.reference_provinces);
         }
-        setFilterVersion((v) => v + 1);
+        clearEpicurveCache();
+      setFilterVersion((v) => v + 1);
       } else {
         setIsLoaded(false);
         setIsSynthetic(false);
@@ -154,6 +156,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       const overview = await getOverview();
       setMeasures(overview);
+      clearEpicurveCache();
       setFilterVersion((v) => v + 1);
     } catch (err: any) {
       setError(err.message || 'Failed to update filters');
@@ -181,6 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const handlePurge = async () => {
     try {
       setLoading(true);
+      clearEpicurveCache();
       await apiPurgeSession();
       setIsLoaded(false);
       setIsSynthetic(false);

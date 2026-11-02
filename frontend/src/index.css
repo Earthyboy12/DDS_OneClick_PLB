@@ -4,33 +4,32 @@
 
 @layer base {
   html {
-    font-size: 17.5px;
-    line-height: 1.65;
+    font-size: 15px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   html[data-font-scale="normal"] {
-    font-size: 15.5px;
+    font-size: 15px;
   }
 
   html[data-font-scale="large"] {
-    font-size: 17.5px;
+    font-size: 16.5px;
   }
 
   html[data-font-scale="xlarge"] {
-    font-size: 19.5px;
+    font-size: 18px;
   }
 
   body {
-    background-color: #f6f8f7;
+    background-color: #f8fafc;
     color: #0f172a;
-    font-family: 'Prompt', 'Sarabun', 'Leelawadee UI', sans-serif;
+    font-family: 'Prompt', 'Sarabun', 'Leelawadee UI', -apple-system, BlinkMacSystemFont, sans-serif;
     letter-spacing: 0.005em;
     @apply antialiased selection:bg-teal-600 selection:text-white;
   }
 
-  /* Ensure form controls and tables are always easy to read and click for seniors */
   select,
   input,
   button {
@@ -38,7 +37,7 @@
   }
 
   select {
-    min-height: 2.5rem;
+    min-height: 2.25rem;
     cursor: pointer;
   }
 
@@ -49,30 +48,23 @@
 
   td {
     font-family: 'Sarabun', 'Prompt', sans-serif;
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
-}
-
-/* Lift micro-text utilities so no label is ever too small for older eyes */
-.text-\[10px\] {
-  font-size: 0.85rem !important;
-  line-height: 1.45 !important;
-}
-
-.text-\[11px\] {
-  font-size: 0.9rem !important;
-  line-height: 1.5 !important;
 }
 
 /* Refined executive card elevation */
 .shadow-xs {
-  box-shadow: 0 2px 14px -2px rgba(15, 23, 42, 0.05), 0 1px 4px -1px rgba(15, 23, 42, 0.03) !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
 }
 
-/* Custom easy-to-grab scrollbars */
+.shadow-card {
+  box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+}
+
+/* Modern clean scrollbars */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -83,7 +75,7 @@
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
-  border: 2px solid #f1f5f9;
+  border: 1.5px solid #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb:hover {

@@ -167,7 +167,7 @@ export const DistrictsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Geography Mode Control Bar */}
-      <div className="bg-white rounded-2xl border-2 border-slate-900 p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <h3 className="font-extrabold text-slate-950 text-base">
@@ -220,7 +220,7 @@ export const DistrictsPage: React.FC = () => {
 
           <button
             onClick={() => tidyInputRef.current?.click()}
-            className="px-3 py-1.5 rounded-lg border-2 border-slate-900 hover:bg-slate-100 text-slate-900 text-xs font-bold transition flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-lg border border-slate-200/90 hover:bg-slate-100 text-slate-900 text-xs font-bold transition flex items-center gap-1.5"
           >
             <Upload className="w-3.5 h-3.5" />
             <span>{lang === 'th' ? 'นำเข้าประชากรรายอำเภอ (CSV)' : 'Tidy District Pop'}</span>
@@ -322,7 +322,7 @@ export const DistrictsPage: React.FC = () => {
       {/* Visual Section: GraphPad Prism Styled Ranked Bar Chart & Reference SQLite District Directory */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Ranked Horizontal Bar Chart in Authentic GraphPad Prism Theme */}
-        <div className="bg-white rounded-2xl border-2 border-slate-900 p-6 shadow-xs space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-slate-900 pb-3">
             <div>
               <div className="flex items-center gap-2">
@@ -386,7 +386,7 @@ export const DistrictsPage: React.FC = () => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-white p-3 rounded-lg border-2 border-slate-900 shadow-lg text-xs space-y-1">
+                        <div className="bg-white p-3 rounded-lg border border-slate-200/90 shadow-lg text-xs space-y-1">
                           <p className="font-extrabold text-slate-950">
                             {figLang === 'th' ? data.name_th : data.name_en} ({data.code})
                           </p>
@@ -424,7 +424,7 @@ export const DistrictsPage: React.FC = () => {
         </div>
 
         {/* Dynamic Reference District Directory Card */}
-        <div className="bg-white rounded-2xl border-2 border-slate-900 p-6 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3 border-b-2 border-slate-900 pb-3">
               <div>
@@ -515,7 +515,7 @@ export const DistrictsPage: React.FC = () => {
       </div>
 
       {/* District Detail Summary Table */}
-      <div className="bg-white rounded-2xl border-2 border-slate-900 p-6 shadow-xs space-y-4">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="font-extrabold text-slate-950 text-sm">
             {lang === 'th'
@@ -529,7 +529,7 @@ export const DistrictsPage: React.FC = () => {
           </span>
         </div>
 
-        <div className="overflow-x-auto border-2 border-slate-900 rounded-xl">
+        <div className="overflow-x-auto border border-slate-200/90 rounded-xl">
           <table className="w-full text-xs text-left">
             <thead className="bg-slate-100 border-b-2 border-slate-900 text-slate-900 font-bold">
               <tr>
