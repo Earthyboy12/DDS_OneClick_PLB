@@ -1,14 +1,26 @@
 import io
 import json
 import logging
+import gc
+import ctypes
 from pathlib import Path
 
 logger = logging.getLogger("dds_main")
+
+
+def trim_memory():
+    """Forces Python garbage collection and instructs glibc to release free memory back to Linux kernel."""
+    gc.collect()
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except Exception:
+        pass
 from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File, Query, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
+from starlette.background import BackgroundTask
 
 from app.config import (
     BASE_DIR,
@@ -467,6 +479,7 @@ def update_active_filters(payload: Dict[str, Any] = Body(...)):
         is_synthetic=session.get("is_synthetic", False),
     )
     session["saved_files"] = saved_paths
+    trim_memory()
 
     scope = apply_filters_and_resolve_scope(df, norm)
     options = extract_available_filter_options(df, address_type=norm["address_type"])
@@ -767,6 +780,7 @@ def _execute_or_simulate_queue(
             is_synthetic=False,
         )
         session["saved_files"] = saved_paths
+        trim_memory()
         impact_summary["saved_files"] = saved_paths
 
     return impact_summary
@@ -809,6 +823,7 @@ def commit_import_queue(payload: Dict[str, Any] = Body(default={})):
         # Remove committed items from staging queue
         for it in items:
             import_stage_manager.remove_staged_item(it["staged_id"])
+        trim_memory()
         res["status"] = "success"
         res["queue"] = import_stage_manager.list_serialized_queue()
         return res
@@ -865,6 +880,7 @@ def generate_synthetic_dataset():
         is_synthetic=True,
     )
     session["saved_files"] = saved_paths
+    trim_memory()
 
     return {
         "status": "success",
@@ -2130,6 +2146,7 @@ def render_studio_figure(
         buf,
         media_type=media_map.get(format, "image/png"),
         headers={"Content-Disposition": f'inline; filename="{fname}"'},
+        background=BackgroundTask(trim_memory),
     )
 
 
@@ -2180,7 +2197,8 @@ def download_presentation_pack(
         zip_disk_path = session_dir / f"DDS_OneClick_Presentation_Pack_{eff_lang.upper()}.zip"
         try:
             zip_disk_path.write_bytes(zip_buf.getvalue())
-            zip_buf.seek(0)
+            del zip_buf
+            trim_memory()
             if "saved_files" not in session:
                 session["saved_files"] = {}
             session["saved_files"][f"presentation_pack_zip_{eff_lang}"] = str(zip_disk_path)
@@ -2188,14 +2206,15 @@ def download_presentation_pack(
             logger.warning(f"Notice: caching presentation pack to disk failed: {e}")
 
         fname = f"DDS_OneClick_Presentation_Pack_{eff_lang.upper()}.zip"
-        return StreamingResponse(
-            zip_buf,
+        return FileResponse(
+            path=str(zip_disk_path),
             media_type="application/zip",
+            filename=fname,
             headers={
-                "Content-Disposition": f'attachment; filename="{fname}"',
                 "Cache-Control": "no-cache",
                 "Access-Control-Expose-Headers": "Content-Disposition",
             },
+            background=BackgroundTask(trim_memory),
         )
     except HTTPException:
         raise
@@ -2242,6 +2261,7 @@ def export_analytical_excel(
             path=saved_xlsx,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             filename="DDS_Surveillance_Report.xlsx",
+            background=BackgroundTask(trim_memory),
         )
 
     buf = create_styled_excel_workbook(
@@ -2254,6 +2274,7 @@ def export_analytical_excel(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": 'attachment; filename="DDS_Surveillance_Report.xlsx"'},
+        background=BackgroundTask(trim_memory),
     )
 
 

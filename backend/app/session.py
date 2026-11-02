@@ -15,9 +15,6 @@ class SessionStore:
         self._sessions[sid] = {
             "created_at": time.time(),
             "last_accessed": time.time(),
-            "raw_df": None,
-            "standardized_df": None,
-            "authoritative_df": None,
             "cleaned_df": None,
             "population_df": None,
             "raw_count": 0,
@@ -60,13 +57,11 @@ class SessionStore:
         session["audit_trail"] = audit_trail
         session["mappings"] = mappings
         session["is_synthetic"] = is_synthetic
-        if standardized_df is not None:
-            session["standardized_df"] = standardized_df
-        if authoritative_df is not None:
-            session["authoritative_df"] = authoritative_df
         if population_df is not None:
             session["population_df"] = population_df
         session["last_accessed"] = time.time()
+        import gc
+        gc.collect()
         return session_id
 
     def delete_session(self, session_id: str) -> bool:

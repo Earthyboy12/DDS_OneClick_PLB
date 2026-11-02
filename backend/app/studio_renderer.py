@@ -177,6 +177,7 @@ def export_fig_to_buffer(fig: plt.Figure, fmt: str = "png", dpi: int = 240, tran
     else:
         fig.savefig(buf, format="png", dpi=dpi, **save_kwargs)
 
+    fig.clf()
     plt.close(fig)
     buf.seek(0)
     return buf

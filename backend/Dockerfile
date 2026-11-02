@@ -22,7 +22,9 @@ COPY data_fixtures ./data_fixtures
 ENV PORT=8000
 ENV MAX_UPLOAD_SIZE_MB=200
 ENV PYTHONUNBUFFERED=1
+# Limit glibc memory arena fragmentation on 512MB RAM containers
+ENV MALLOC_ARENA_MAX=2
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --limit-concurrency 10"]

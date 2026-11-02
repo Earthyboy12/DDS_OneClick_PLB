@@ -393,6 +393,7 @@ def create_presentation_pack_zip(
         for base_name, renderer in fig_specs:
             png_buf = renderer("png")
             zf.writestr(f"figures_4k_png/{base_name}_4k.png", png_buf.getvalue())
+            del png_buf
             if include_vector:
                 zf.writestr(f"figures_vector_svg/{base_name}.svg", renderer("svg").getvalue())
                 zf.writestr(f"figures_vector_pdf/{base_name}.pdf", renderer("pdf").getvalue())
