@@ -14,7 +14,9 @@ import {
   ImportMode,
 } from '../types';
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '') + '/api';
+const DEFAULT_PROD_BACKEND = 'https://dds-oneclick-plb.onrender.com';
+const envBase = (import.meta.env.VITE_API_BASE_URL || '').trim();
+const API_BASE = (envBase || (import.meta.env.PROD ? DEFAULT_PROD_BACKEND : '')).replace(/\/$/, '') + '/api';
 
 export async function getSessionStatus() {
   const res = await fetch(`${API_BASE}/session/status`);
