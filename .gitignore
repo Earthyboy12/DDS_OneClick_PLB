@@ -1,0 +1,33 @@
+# Node dependencies & build outputs
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.pytest_cache/
+
+# Environment files
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+
+# Session cache (preserve folder with .gitkeep)
+backend/data_sessions/*
+!backend/data_sessions/.gitkeep

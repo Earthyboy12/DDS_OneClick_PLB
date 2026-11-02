@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 17.5px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html[data-font-scale="normal"] {
+    font-size: 15.5px;
+  }
+
+  html[data-font-scale="large"] {
+    font-size: 17.5px;
+  }
+
+  html[data-font-scale="xlarge"] {
+    font-size: 19.5px;
+  }
+
+  body {
+    background-color: #f6f8f7;
+    color: #0f172a;
+    font-family: 'Prompt', 'Sarabun', 'Leelawadee UI', sans-serif;
+    letter-spacing: 0.005em;
+    @apply antialiased selection:bg-teal-600 selection:text-white;
+  }
+
+  /* Ensure form controls and tables are always easy to read and click for seniors */
+  select,
+  input,
+  button {
+    font-family: 'Prompt', 'Sarabun', sans-serif;
+  }
+
+  select {
+    min-height: 2.5rem;
+    cursor: pointer;
+  }
+
+  th {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  td {
+    font-family: 'Sarabun', 'Prompt', sans-serif;
+    font-size: 1rem;
+  }
+}
+
+/* Lift micro-text utilities so no label is ever too small for older eyes */
+.text-\[10px\] {
+  font-size: 0.85rem !important;
+  line-height: 1.45 !important;
+}
+
+.text-\[11px\] {
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Refined executive card elevation */
+.shadow-xs {
+  box-shadow: 0 2px 14px -2px rgba(15, 23, 42, 0.05), 0 1px 4px -1px rgba(15, 23, 42, 0.03) !important;
+}
+
+/* Custom easy-to-grab scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
