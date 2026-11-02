@@ -4,8 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-REFERENCE_DB_PATH = PROJECT_ROOT / "dds_reference" / "data" / "dds_reference.sqlite"
+from app.config import REFERENCE_DB_PATH, PROJECT_ROOT
 
 AGE_BAND_INDEX_RANGES: Dict[str, Tuple[int, int]] = {
     "<1": (0, 0),

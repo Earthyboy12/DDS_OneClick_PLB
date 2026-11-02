@@ -7,16 +7,21 @@ PROJECT_ROOT = BASE_DIR.parent
 SESSIONS_DIR = BASE_DIR / "data_sessions"
 FIXTURES_DIR = BASE_DIR / "data_fixtures"
 
-# Support reference database in root, backend directory, or custom env
-_custom_ref = os.environ.get("REFERENCE_DB_PATH")
-if _custom_ref and Path(_custom_ref).exists():
-    REFERENCE_DB_PATH = Path(_custom_ref)
-elif (PROJECT_ROOT / "dds_reference" / "data" / "dds_reference.sqlite").exists():
-    REFERENCE_DB_PATH = PROJECT_ROOT / "dds_reference" / "data" / "dds_reference.sqlite"
-elif (BASE_DIR / "dds_reference" / "data" / "dds_reference.sqlite").exists():
-    REFERENCE_DB_PATH = BASE_DIR / "dds_reference" / "data" / "dds_reference.sqlite"
-else:
-    REFERENCE_DB_PATH = PROJECT_ROOT / "dds_reference" / "data" / "dds_reference.sqlite"
+# Support reference database in root, backend directory, Docker path, or custom env
+_candidate_paths = [
+    os.environ.get("REFERENCE_DB_PATH"),
+    BASE_DIR / "dds_reference" / "data" / "dds_reference.sqlite",
+    PROJECT_ROOT / "dds_reference" / "data" / "dds_reference.sqlite",
+    Path("/app/dds_reference/data/dds_reference.sqlite"),
+    Path(__file__).resolve().parent.parent / "dds_reference" / "data" / "dds_reference.sqlite",
+]
+REFERENCE_DB_PATH = None
+for cp in _candidate_paths:
+    if cp and Path(cp).exists():
+        REFERENCE_DB_PATH = Path(cp).resolve()
+        break
+if REFERENCE_DB_PATH is None:
+    REFERENCE_DB_PATH = (BASE_DIR / "dds_reference" / "data" / "dds_reference.sqlite").resolve()
 
 SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
 FIXTURES_DIR.mkdir(parents=True, exist_ok=True)

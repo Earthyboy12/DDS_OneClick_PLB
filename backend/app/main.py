@@ -762,12 +762,19 @@ def preview_import_impact(payload: Dict[str, Any] = Body(default={})):
     Previews the exact impact of merging the staged queue ('replace' vs 'append')
     before modifying the active session.
     """
-    import_mode = (payload or {}).get("import_mode", "replace")
-    staged_ids = (payload or {}).get("staged_ids")
-    items = import_stage_manager.get_staged_items(staged_ids)
-    if not items:
-        raise HTTPException(status_code=400, detail="ยังไม่มีไฟล์ในคิวนำเข้า กรุณาเลือกไฟล์ก่อน")
-    return _execute_or_simulate_queue(items, import_mode=import_mode, commit=False)
+    try:
+        import_mode = (payload or {}).get("import_mode", "replace")
+        staged_ids = (payload or {}).get("staged_ids")
+        items = import_stage_manager.get_staged_items(staged_ids)
+        if not items:
+            raise HTTPException(status_code=400, detail="ยังไม่มีไฟล์ในคิวนำเข้า กรุณาเลือกไฟล์ก่อน")
+        return _execute_or_simulate_queue(items, import_mode=import_mode, commit=False)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"เกิดข้อผิดพลาดในการจำลองการนำเข้า: {str(exc)}")
 
 
 @app.post("/api/import/commit")
@@ -775,19 +782,26 @@ def commit_import_queue(payload: Dict[str, Any] = Body(default={})):
     """
     Confirms and commits the staged import queue using the chosen import_mode ('replace' or 'append').
     """
-    import_mode = (payload or {}).get("import_mode", "replace")
-    staged_ids = (payload or {}).get("staged_ids")
-    items = import_stage_manager.get_staged_items(staged_ids)
-    if not items:
-        raise HTTPException(status_code=400, detail="ยังไม่มีไฟล์ในคิวนำเข้า กรุณาเลือกไฟล์ก่อน")
+    try:
+        import_mode = (payload or {}).get("import_mode", "replace")
+        staged_ids = (payload or {}).get("staged_ids")
+        items = import_stage_manager.get_staged_items(staged_ids)
+        if not items:
+            raise HTTPException(status_code=400, detail="ยังไม่มีไฟล์ในคิวนำเข้า กรุณาเลือกไฟล์ก่อน")
 
-    res = _execute_or_simulate_queue(items, import_mode=import_mode, commit=True)
-    # Remove committed items from staging queue
-    for it in items:
-        import_stage_manager.remove_staged_item(it["staged_id"])
-    res["status"] = "success"
-    res["queue"] = import_stage_manager.list_serialized_queue()
-    return res
+        res = _execute_or_simulate_queue(items, import_mode=import_mode, commit=True)
+        # Remove committed items from staging queue
+        for it in items:
+            import_stage_manager.remove_staged_item(it["staged_id"])
+        res["status"] = "success"
+        res["queue"] = import_stage_manager.list_serialized_queue()
+        return res
+    except HTTPException:
+        raise
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"เกิดข้อผิดพลาดในการยืนยันนำเข้าข้อมูล: {str(exc)}")
 
 
 @app.post("/api/generate-synthetic")
