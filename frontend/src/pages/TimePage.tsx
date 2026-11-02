@@ -28,6 +28,7 @@ import {
   ReferenceLine,
   LineChart,
   Line,
+  ComposedChart,
 } from 'recharts';
 
 export const TimePage: React.FC = () => {
@@ -446,20 +447,20 @@ export const TimePage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 text-slate-800">
-            <span className="inline-block text-slate-700 font-bold">▲ - -</span>
+            <span className="w-3.5 h-3 rounded-xs bg-[#cbd5e1] border border-[#94a3b8] inline-block" />
             <span>
               {lang === 'th'
-                ? `มัธยฐาน 5 ปีย้อนหลัง (${seasonalData?.median_years_used?.map((y: number) => y + 543).join(', ') || '-'})`
-                : `5-Yr Median (${seasonalData?.median_years_used?.join(', ') || '-'})`}
+                ? `มัธยฐาน 5 ปีย้อนหลัง (กราฟแท่ง) (${seasonalData?.median_years_used?.map((y: number) => y + 543).join(', ') || '-'})`
+                : `5-Yr Median (Bar) (${seasonalData?.median_years_used?.join(', ') || '-'})`}
             </span>
           </div>
         </div>
 
-        {/* Line Chart */}
+        {/* Seasonal Comparison Composed Chart (Grey Bars for Median, Lines for 1 & 2 Years) */}
         {seasonalChartData.length > 0 && isMounted ? (
           <div className="h-[380px] w-full min-w-0">
             <ResponsiveContainer width="100%" height={370} minWidth={280}>
-              <LineChart data={seasonalChartData} margin={{ top: 15, right: 20, left: 0, bottom: 20 }}>
+              <ComposedChart data={seasonalChartData} margin={{ top: 15, right: 20, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis
                   dataKey="week_label"
@@ -505,8 +506,8 @@ export const TimePage: React.FC = () => {
                               <span className="text-slate-400 font-normal">-</span>
                             )}
                           </p>
-                          <p className="text-slate-800 font-semibold">
-                            {figLang === 'th' ? 'มัธยฐาน 5 ปีย้อนหลัง:' : '5-Year Median:'}{' '}
+                          <p className="text-slate-700 font-semibold">
+                            {figLang === 'th' ? 'มัธยฐาน 5 ปีย้อนหลัง (แท่งสีเทา):' : '5-Year Median (Grey Bar):'}{' '}
                             {d.raw_cases_median !== null ? (
                               seasonalMetric === 'cases'
                                 ? `${d.raw_cases_median.toLocaleString()} ราย`
@@ -522,16 +523,17 @@ export const TimePage: React.FC = () => {
                   }}
                 />
 
-                <Line
-                  type="monotone"
+                {/* 5-Year Median as grey bar */}
+                <Bar
                   dataKey="median_val"
-                  stroke="#475569"
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                  dot={{ r: 3, fill: '#475569' }}
-                  connectNulls={true}
-                  name={figLang === 'th' ? 'มัธยฐาน 5 ปี' : '5-Year Median'}
+                  fill="#cbd5e1"
+                  stroke="#94a3b8"
+                  strokeWidth={1}
+                  radius={[2, 2, 0, 0]}
+                  name={figLang === 'th' ? 'มัธยฐาน 5 ปี (กราฟแท่ง)' : '5-Year Median (Bar)'}
                 />
+
+                {/* Previous year as blue line */}
                 <Line
                   type="monotone"
                   dataKey="prev_val"
@@ -541,6 +543,8 @@ export const TimePage: React.FC = () => {
                   connectNulls={true}
                   name={figLang === 'th' ? `พ.ศ. ${prevYearBe}` : `Year ${seasonalData?.prev_year}`}
                 />
+
+                {/* Latest year as crimson red line */}
                 <Line
                   type="monotone"
                   dataKey="latest_val"
@@ -550,7 +554,7 @@ export const TimePage: React.FC = () => {
                   connectNulls={false}
                   name={figLang === 'th' ? `พ.ศ. ${latestYearBe}` : `Year ${seasonalData?.latest_year}`}
                 />
-              </LineChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         ) : (

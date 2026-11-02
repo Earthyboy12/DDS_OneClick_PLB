@@ -1243,19 +1243,19 @@ def render_figure_8_seasonal_comparison(
     med_lbl = seasonal_data.get("median_label_en" if is_en else "median_label_th") or "5-Year Median"
 
     eff_title = title or (
-        "Seasonal Surveillance Curve: Last 2 Years vs. 5-Year Historical Median"
+        "Seasonal Surveillance: Last 2 Years vs. 5-Year Historical Median"
         if is_en
-        else "กราฟเส้นเปรียบเทียบการระบาดรายสัปดาห์: 2 ปีล่าสุด เทียบกับค่ามัธยฐาน 5 ปีย้อนหลัง"
+        else "เปรียบเทียบการระบาดรายสัปดาห์: 2 ปีล่าสุด เทียบกับค่ามัธยฐาน 5 ปีย้อนหลัง"
     )
     eff_sub = subtitle or (
-        f"{lat_lbl} vs. {prv_lbl or '-'} vs. {med_lbl} (Weeks W01–W52)"
+        f"{lat_lbl} (Line) vs. {prv_lbl or '-'} (Line) vs. {med_lbl} (Bars, W01–W52)"
         if is_en
-        else f"เปรียบเทียบ {lat_lbl} • {prv_lbl or '-'} • {med_lbl} (สัปดาห์ที่ 1–52)"
+        else f"เปรียบเทียบ {lat_lbl} (กราฟเส้น) • {prv_lbl or '-'} (กราฟเส้น) • {med_lbl} (กราฟแท่ง สัปดาห์ที่ 1–52)"
     )
     eff_foot = footnote or (
-        "Plotted by epidemiological week (W01–W52) | Latest year plotted through latest reported week"
+        "5-Year Median plotted as grey bars | Recent years plotted as trend lines (W01–W52)"
         if is_en
-        else "จำแนกตามสัปดาห์ระบาดวิทยาที่ 1–52 | ปีล่าสุดแสดงเฉพาะถึงสัปดาห์ที่มีรายงานจริง"
+        else "มัธยฐาน 5 ปีแสดงด้วยกราฟแท่งสีเทา | 1 และ 2 ปีย้อนหลังแสดงด้วยกราฟเส้นแนวโน้ม (สัปดาห์ที่ 1–52)"
     )
 
     fig, ax, colors, _ = create_base_slide(
@@ -1275,21 +1275,23 @@ def render_figure_8_seasonal_comparison(
         lat_key = "latest_rate" if is_rate else "latest_cases"
 
         med_y = [float(w.get(med_key) or 0.0) for w in weeks]
-        ax.plot(
+        med_bar_color = "#cbd5e1" if theme == "light" else "#475569"
+        med_edge_color = "#94a3b8" if theme == "light" else "#64748b"
+        
+        # 5-year median as grey bars
+        ax.bar(
             x_all,
             med_y,
-            color=colors["axis"],
-            linestyle="--",
-            linewidth=2.3,
-            marker="^",
-            markerfacecolor=colors["bg"],
-            markeredgecolor=colors["axis"],
-            markeredgewidth=1.5,
-            markersize=6.5,
-            label=med_lbl,
-            zorder=3,
+            color=med_bar_color,
+            edgecolor=med_edge_color,
+            linewidth=0.8,
+            width=0.72,
+            label=f"{med_lbl} ({'แท่งสีเทา' if not is_en else 'Grey Bar'})",
+            zorder=2,
+            alpha=0.85,
         )
 
+        # Previous year as blue line
         if prv_lbl:
             prv_pts = [(int(w["epi_week"]), float(w[prv_key])) for w in weeks if w.get(prv_key) is not None]
             if prv_pts:
@@ -1308,6 +1310,7 @@ def render_figure_8_seasonal_comparison(
                     zorder=4,
                 )
 
+        # Latest year as crimson red line
         lat_pts = [(int(w["epi_week"]), float(w[lat_key])) for w in weeks if w.get(lat_key) is not None]
         if lat_pts:
             ax.plot(
