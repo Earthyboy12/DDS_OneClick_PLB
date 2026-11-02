@@ -378,7 +378,7 @@ def create_presentation_pack_zip(
 
     zip_buf = io.BytesIO()
     with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        # 1. Render 8 Figures in PNG (3840x2160), and optionally SVG / PDF
+        # 1. Render 8 Figures in PNG (1920x1080 Publication Quality), and optionally SVG / PDF
         fig_specs = [
             ("01_weekly_epidemic_curve", lambda fmt: render_figure_1_epicurve(work_df, theme=theme, export_fmt=fmt, lang=eff_lang)),
             ("02_district_distribution", lambda fmt: render_figure_2_district_bar(work_df, theme=theme, export_fmt=fmt, use_illness_district=use_illness, lang=eff_lang)),
@@ -392,14 +392,14 @@ def create_presentation_pack_zip(
 
         for base_name, renderer in fig_specs:
             png_buf = renderer("png")
-            zf.writestr(f"figures_4k_png/{base_name}_4k.png", png_buf.getvalue())
+            zf.writestr(f"figures_png/{base_name}.png", png_buf.getvalue())
             del png_buf
             if include_vector:
                 zf.writestr(f"figures_vector_svg/{base_name}.svg", renderer("svg").getvalue())
                 zf.writestr(f"figures_vector_pdf/{base_name}.pdf", renderer("pdf").getvalue())
             plt.close("all")
 
-        # 2. Slide-Readable Table Exports (4K PNG & optional PDF)
+        # 2. Slide-Readable Table Exports (PNG & optional PDF)
         t2_headers = (
             ["Age Group", "Cases (C)", "Population", "Pop Year", "Rate/100k", "IPD", "OPD", "Unk", "Hosp %"]
             if eff_lang == "en"
@@ -429,7 +429,7 @@ def create_presentation_pack_zip(
             export_fmt="png",
             lang=eff_lang,
         )
-        zf.writestr("slide_tables/Table_2_Age_Burden_Slide_4k.png", slide_t2_png.getvalue())
+        zf.writestr("slide_tables/Table_2_Age_Burden_Slide.png", slide_t2_png.getvalue())
         plt.close("all")
 
         if include_vector:
@@ -479,7 +479,7 @@ def create_presentation_pack_zip(
             "is_synthetic_demonstration": is_synthetic,
             "theme_mode": theme,
             "language": eff_lang,
-            "aspect_ratio": "16:9 (3840x2160 UHD Native)",
+            "aspect_ratio": "16:9 (1920x1080 Publication Quality)",
             "active_filters": f,
             "active_scope": {
                 "scope_mode": scope_ctx["scope_mode"],
@@ -497,11 +497,11 @@ def create_presentation_pack_zip(
 
         readme_text = (
             "========================================================================\r\n"
-            "DDS ONE-CLICK SURVEILLANCE SYSTEM - PRESENTATION PACK (4K UHD)\r\n"
+            "DDS ONE-CLICK SURVEILLANCE SYSTEM - PRESENTATION PACK (PUBLICATION QUALITY)\r\n"
             "กลุ่มงานระบาดวิทยา สำนักงานสาธารณสุขจังหวัดพิษณุโลก\r\n"
             "========================================================================\r\n\r\n"
             "โครงสร้างไฟล์ในแพ็กเกจนำเสนอ:\r\n"
-            "1. figures_4k_png/ : แผนภูมิความละเอียดสูงพิเศษ 3840x2160 (16:9 UHD) ครบ 8 ภาพ\r\n"
+            "1. figures_png/    : แผนภูมิคุณภาพตีพิมพ์ 1920x1080 (16:9 Full HD) ครบ 8 ภาพ\r\n"
             "   (01 Epicurve, 02 Districts, 03 Age-Sex, 04 Rates, 05 Hospitalization,\r\n"
             "    06 Thai vs Non-Thai, 07 Weekly Forecast, 08 Seasonal Comparison)\r\n"
             "2. slide_tables/   : ตารางนำเสนอความละเอียดสูง Table 2 สำหรับวางบนสไลด์\r\n"

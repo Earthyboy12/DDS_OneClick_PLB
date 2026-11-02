@@ -81,16 +81,16 @@ export const PresentationStudioPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5">
             <h3 className="font-extrabold text-slate-950 text-base">
-              {lang === 'th' ? 'ห้องจัดสไลด์ 4K' : '4K Presentation Studio'}
+              {lang === 'th' ? 'ห้องจัดสไลด์และกราฟ' : 'Presentation Studio'}
             </h3>
             <span className="text-xs px-2.5 py-0.5 rounded border border-slate-900 bg-slate-100 text-slate-900 font-bold font-mono">
-              3840×2160 UHD • ไร้ลายน้ำ
+              1920×1080 Publication Quality • ไร้ลายน้ำ
             </span>
           </div>
           <p className="text-xs text-slate-600 font-medium mt-1">
             {lang === 'th'
-              ? 'ส่งออกแผนภาพความละเอียดสูง 3840×2160 ครบ 8 ภาพ รองรับทั้งระดับจังหวัดและอำเภอ'
-              : 'Export publication-grade figures at 3840×2160 UHD resolution (no watermarks) across all 8 figures.'}
+              ? 'ส่งออกแผนภาพคุณภาพตีพิมพ์ (Publication Quality 1920×1080) ครบ 8 ภาพ รองรับทั้งระดับจังหวัดและอำเภอ'
+              : 'Export publication-grade figures at 1920×1080 resolution (no watermarks) across all 8 figures.'}
           </p>
         </div>
 
@@ -250,7 +250,7 @@ export const PresentationStudioPage: React.FC = () => {
                     preset === 'full_16_9' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-700'
                   }`}
                 >
-                  16:9 (3840×2160)
+                  16:9 (1920×1080)
                 </button>
                 <button
                   onClick={() => {
@@ -271,7 +271,7 @@ export const PresentationStudioPage: React.FC = () => {
                 onChange={(e) => setExportFormat(e.target.value as any)}
                 className="px-2.5 py-1.5 rounded-lg border border-slate-200/90 bg-white text-slate-900 font-bold focus:outline-none"
               >
-                <option value="png">PNG (3840×2160 4K)</option>
+                <option value="png">PNG (1920×1080 Publication Quality)</option>
                 <option value="svg">Vector SVG</option>
                 <option value="pdf">Vector PDF</option>
               </select>
@@ -390,7 +390,7 @@ export const PresentationStudioPage: React.FC = () => {
               <span>
                 Slide 0{selectedFig?.id} ({figLang.toUpperCase()}): {figLang === 'th' ? selectedFig?.name_th : selectedFig?.name_en}
               </span>
-              <span className="text-[11px] text-teal-300">3840×2160 UHD • No Watermarks</span>
+              <span className="text-[11px] text-teal-300">1920×1080 Publication Quality • No Watermarks</span>
             </div>
 
             {currentPreviewUrl ? (

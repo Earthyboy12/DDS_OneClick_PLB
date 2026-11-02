@@ -213,7 +213,7 @@ export const TimePage: React.FC = () => {
             className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-xs"
           >
             <Presentation className="w-3.5 h-3.5" />
-            <span>{lang === 'th' ? 'สไลด์ 4K' : '4K Slide'}</span>
+            <span>{lang === 'th' ? 'ห้องจัดสไลด์' : 'Slide Studio'}</span>
           </button>
         </div>
       </div>

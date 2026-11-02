@@ -72,8 +72,8 @@ export const Sidebar: React.FC = () => {
     {
       id: 'studio',
       step: 8,
-      labelTh: '8. ห้องจัดสไลด์ 4K (1–7)',
-      labelEn: '8. 4K Slide Studio (1–7)',
+      labelTh: '8. ห้องจัดสไลด์ (1–8)',
+      labelEn: '8. Slide Studio (1–8)',
       icon: Presentation,
       highlight: true,
     },

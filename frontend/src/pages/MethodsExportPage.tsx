@@ -222,8 +222,8 @@ export const MethodsExportPage: React.FC = () => {
           </h4>
           <p className="text-xs text-slate-400 mt-0.5">
             {lang === 'th'
-              ? 'ดาวน์โหลดสไลด์ความละเอียด 4K, สมุดงาน Excel ตารางมาตรฐาน หรือไฟล์ CSV รวม'
-              : 'Download 4K UHD presentation slides, multi-sheet XLSX workbook, or CSV packages.'}
+              ? 'ดาวน์โหลดสไลด์ความละเอียดสูง (Publication Quality 1920×1080), สมุดงาน Excel ตารางมาตรฐาน หรือไฟล์ CSV รวม'
+              : 'Download Publication Quality presentation slides (1920×1080), multi-sheet XLSX workbook, or CSV packages.'}
           </p>
         </div>
 

@@ -63,7 +63,7 @@ export const PersonRatesPage: React.FC = () => {
           className="px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium transition flex items-center gap-1.5"
         >
           <Presentation className="w-3.5 h-3.5" />
-          <span>{lang === 'th' ? 'สไลด์ 4K' : '4K Slide'}</span>
+          <span>{lang === 'th' ? 'ห้องจัดสไลด์' : 'Slide Studio'}</span>
         </button>
       </div>
 

@@ -109,7 +109,7 @@ def apply_prism_axes_style(
 def create_base_slide(
     theme: str = "light",
     preset: str = "full_16_9",
-    dpi: int = 240,
+    dpi: int = 120,
     title: str = "",
     subtitle: str = "",
     footnote: str = "",
@@ -120,8 +120,8 @@ def create_base_slide(
 ) -> Tuple[plt.Figure, plt.Axes, Dict[str, str], FontProperties]:
     """
     Sets up a clean, watermark-free GraphPad Prism-style slide figure at 16:9 ratio.
-    At figsize=(16, 9) and dpi=240 without bbox_inches='tight':
-    16 * 240 = 3840, 9 * 240 = 2160 pixels (exact 4K UHD).
+    At figsize=(16, 9) and dpi=120 without bbox_inches='tight':
+    16 * 120 = 1920, 9 * 120 = 1080 pixels (Full HD 1080p, Standard Publication Quality).
     """
     colors = PALETTE_DARK if theme == "dark" else PALETTE_LIGHT
     fig = plt.figure(figsize=(16, 9), dpi=dpi)
@@ -159,9 +159,9 @@ def create_base_slide(
     return fig, ax, colors, font_title
 
 
-def export_fig_to_buffer(fig: plt.Figure, fmt: str = "png", dpi: int = 240, transparent: bool = False) -> io.BytesIO:
+def export_fig_to_buffer(fig: plt.Figure, fmt: str = "png", dpi: int = 120, transparent: bool = False) -> io.BytesIO:
     """
-    Exports figure to PNG (exact 3840x2160 at 16x9 @ 240 DPI), SVG, or PDF without watermarks.
+    Exports figure to PNG (exact 1920x1080 at 16x9 @ 120 DPI, Publication Quality), SVG, or PDF without watermarks.
     """
     buf = io.BytesIO()
     save_kwargs: Dict[str, Any] = {}
@@ -963,7 +963,7 @@ def render_figure_6_nationality_comparison(
     )
 
     colors = PALETTE_DARK if theme == "dark" else PALETTE_LIGHT
-    fig = plt.figure(figsize=(16, 9), dpi=240)
+    fig = plt.figure(figsize=(16, 9), dpi=120)
     bg_color = "none" if transparent else colors["bg"]
     fig.patch.set_facecolor(bg_color)
 
