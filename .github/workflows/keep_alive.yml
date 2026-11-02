@@ -1,0 +1,17 @@
+name: Keep Render Backend Awake
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render Free Tier from sleeping (15-min idle timeout)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping DDS Backend Keep-Alive
+        run: |
+          echo "Pinging Render backend to keep instance warm..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://dds-oneclick-plb.onrender.com/api/ping || echo "000")
+          echo "Render response HTTP status: $HTTP_CODE"

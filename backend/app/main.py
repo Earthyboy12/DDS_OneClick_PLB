@@ -305,14 +305,19 @@ def resolve_effective_filters(
     return normalize_filters(merged)
 
 
+@app.get("/health")
 @app.get("/api/health")
-def health_check():
-    return {
-        "status": "healthy",
-        "app": "DDS One-Click Surveillance",
-        "active_session": session_store.get_session(ACTIVE_SESSION_ID) is not None,
-        "reference_db": get_reference_summary(),
-    }
+@app.get("/api/ping")
+def health_check(full: bool = False):
+    """Fast health check / keep-alive endpoint for cron pings and uptime monitors."""
+    if full:
+        return {
+            "status": "healthy",
+            "app": "DDS One-Click Surveillance",
+            "active_session": session_store.get_session(ACTIVE_SESSION_ID) is not None,
+            "reference_db": get_reference_summary(),
+        }
+    return {"status": "ok", "app": "DDS One-Click Surveillance"}
 
 
 @app.get("/api/reference/summary")

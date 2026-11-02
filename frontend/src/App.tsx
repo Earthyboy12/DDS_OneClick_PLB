@@ -53,7 +53,7 @@ class PageErrorBoundary extends React.Component<
 }
 
 const PageContent: React.FC = () => {
-  const { activeTab } = useApp();
+  const { activeTab, isBackendWaking, lang } = useApp();
 
   const getPageTitles = () => {
     switch (activeTab) {
@@ -112,6 +112,21 @@ const PageContent: React.FC = () => {
       <Sidebar />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {isBackendWaking && (
+          <div className="bg-amber-400 text-amber-950 px-5 py-2.5 flex items-center justify-between text-xs font-bold border-b-2 border-amber-600 shadow-sm animate-pulse z-50">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-900 animate-ping" />
+              <span>
+                {lang === 'th'
+                  ? '⚡ กำลังปลุกระบบประมวลผลหลังบ้าน (Render กำลัง Spin-up ใช้เวลาประมาณ 30–45 วินาที)... ระบบกำลังเชื่อมต่อให้อัตโนมัติ'
+                  : '⚡ Waking up backend server (Render is spinning up, takes ~30–45s)... Auto-reconnecting...'}
+              </span>
+            </div>
+            <span className="text-[11px] font-mono font-bold bg-amber-200 px-2.5 py-0.5 rounded border border-amber-700">
+              Auto-Retrying...
+            </span>
+          </div>
+        )}
         <SyntheticBanner />
         <Header titleTh={titles.th} titleEn={titles.en} />
         <FilterBar />

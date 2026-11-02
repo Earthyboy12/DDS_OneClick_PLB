@@ -45,6 +45,7 @@ interface AppContextType {
   updateFilters: (partial: Partial<ActiveFilters>) => Promise<void>;
   resetFilters: () => Promise<void>;
   loading: boolean;
+  isBackendWaking: boolean;
   error: string | null;
   refreshData: () => Promise<void>;
   purgeSession: () => Promise<void>;
@@ -65,6 +66,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [referenceProvinces, setReferenceProvinces] = useState<ReferenceProvince[]>([]);
   const [filterVersion, setFilterVersion] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isBackendWaking, setIsBackendWaking] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const setLang = (newLang: Language) => {
@@ -88,6 +90,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setLoading(true);
       setError(null);
       const status = await getSessionStatus();
+      setIsBackendWaking(false);
       if (status.loaded) {
         setIsLoaded(true);
         setIsSynthetic(status.is_synthetic);
@@ -120,8 +123,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setFilters(DEFAULT_FILTERS);
       }
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to load surveillance data');
+      console.warn('Backend waking up or network delay, auto-retrying...', err);
+      setIsBackendWaking(true);
+      setError(err.message || 'Connecting to backend...');
+      setTimeout(() => {
+        refreshData();
+      }, 4000);
     } finally {
       setLoading(false);
     }
@@ -226,6 +233,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateFilters,
         resetFilters,
         loading,
+        isBackendWaking,
         error,
         refreshData,
         purgeSession: handlePurge,
