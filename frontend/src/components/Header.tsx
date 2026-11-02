@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Languages, RefreshCw, Trash2, Download, Sparkles, Type } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getPresentationPackUrl } from '../services/api';
+import { getPresentationPackUrl, downloadPresentationPackFile } from '../services/api';
 
 interface HeaderProps {
   titleTh: string;
@@ -12,6 +12,7 @@ type FontScale = 'normal' | 'large' | 'xlarge';
 
 export const Header: React.FC<HeaderProps> = ({ titleTh, titleEn }) => {
   const { lang, setLang, figLang, isLoaded, purgeSession, refreshData, loading, loadSynthetic, measures } = useApp();
+  const [downloadingPack, setDownloadingPack] = useState(false);
   const [fontScale, setFontScale] = useState<FontScale>(() => {
     const saved = localStorage.getItem('dds_font_scale') as FontScale | null;
     return saved && ['normal', 'large', 'xlarge'].includes(saved) ? saved : 'large';
@@ -119,18 +120,30 @@ export const Header: React.FC<HeaderProps> = ({ titleTh, titleEn }) => {
         )}
 
         {isLoaded && (
-          <a
-            href={getPresentationPackUrl('light', figLang)}
-            download
-            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-700 to-teal-600 text-white hover:from-teal-800 hover:to-teal-700 text-xs font-semibold shadow-sm transition"
+          <button
+            onClick={async () => {
+              if (downloadingPack) return;
+              setDownloadingPack(true);
+              try {
+                await downloadPresentationPackFile('light', figLang);
+              } catch (err: any) {
+                alert(err?.message || 'ดาวน์โหลดล้มเหลว กรุณาลองใหม่อีกครั้ง');
+              } finally {
+                setDownloadingPack(false);
+              }
+            }}
+            disabled={downloadingPack}
+            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-700 to-teal-600 text-white hover:from-teal-800 hover:to-teal-700 text-xs font-semibold shadow-sm transition disabled:opacity-60 cursor-pointer"
           >
-            <Download className="w-4 h-4" />
+            <Download className={`w-4 h-4 ${downloadingPack ? 'animate-bounce' : ''}`} />
             <span>
-              {lang === 'th'
-                ? `ดาวน์โหลดชุดสไลด์ (${figLang.toUpperCase()})`
-                : `Presentation Pack (${figLang.toUpperCase()})`}
+              {downloadingPack
+                ? (lang === 'th' ? 'กำลังดาวน์โหลด...' : 'Downloading...')
+                : (lang === 'th'
+                  ? `ดาวน์โหลดชุดสไลด์ (${figLang.toUpperCase()})`
+                  : `Presentation Pack (${figLang.toUpperCase()})`)}
             </span>
-          </a>
+          </button>
         )}
 
         <button

@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import pandas as pd
+import matplotlib.pyplot as plt
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
@@ -323,13 +324,15 @@ def create_presentation_pack_zip(
     filters: Optional[Dict[str, Any]] = None,
     raw_filters: Optional[Dict[str, Any]] = None,
     lang: str = "th",
+    include_vector: bool = False,
 ) -> io.BytesIO:
     """
     Generates a complete One-Click Presentation Pack ZIP containing:
-    - 7 High-resolution 4K slides (exact 3840×2160 PNG) in requested language (th/en)
-    - Vector SVG & PDF versions of slides
-    - Slide-readable summary table exports (4K PNG & PDF)
+    - 8 High-resolution 4K slides (exact 3840×2160 PNG) in requested language (th/en)
+    - Vector SVG & PDF versions of slides (when include_vector=True)
+    - Slide-readable summary table exports (4K PNG, and PDF if include_vector=True)
     - Aggregate XLSX workbook & CSV tables (Tables 0 to 4) sharing the same filters and denominators
+    - Manifest and README.txt
     """
     eff_filters = raw_filters if raw_filters is not None else filters
     scope_ctx = apply_filters_and_resolve_scope(cleaned_df, eff_filters)
@@ -375,7 +378,7 @@ def create_presentation_pack_zip(
 
     zip_buf = io.BytesIO()
     with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        # 1. Render 8 Figures in PNG (3840x2160), SVG, and PDF
+        # 1. Render 8 Figures in PNG (3840x2160), and optionally SVG / PDF
         fig_specs = [
             ("01_weekly_epidemic_curve", lambda fmt: render_figure_1_epicurve(work_df, theme=theme, export_fmt=fmt, lang=eff_lang)),
             ("02_district_distribution", lambda fmt: render_figure_2_district_bar(work_df, theme=theme, export_fmt=fmt, use_illness_district=use_illness, lang=eff_lang)),
@@ -388,11 +391,14 @@ def create_presentation_pack_zip(
         ]
 
         for base_name, renderer in fig_specs:
-            zf.writestr(f"figures_4k_png/{base_name}_4k.png", renderer("png").getvalue())
-            zf.writestr(f"figures_vector_svg/{base_name}.svg", renderer("svg").getvalue())
-            zf.writestr(f"figures_vector_pdf/{base_name}.pdf", renderer("pdf").getvalue())
+            png_buf = renderer("png")
+            zf.writestr(f"figures_4k_png/{base_name}_4k.png", png_buf.getvalue())
+            if include_vector:
+                zf.writestr(f"figures_vector_svg/{base_name}.svg", renderer("svg").getvalue())
+                zf.writestr(f"figures_vector_pdf/{base_name}.pdf", renderer("pdf").getvalue())
+            plt.close("all")
 
-        # 2. Slide-Readable Table Exports (4K PNG & PDF)
+        # 2. Slide-Readable Table Exports (4K PNG & optional PDF)
         t2_headers = (
             ["Age Group", "Cases (C)", "Population", "Pop Year", "Rate/100k", "IPD", "OPD", "Unk", "Hosp %"]
             if eff_lang == "en"
@@ -423,22 +429,32 @@ def create_presentation_pack_zip(
             lang=eff_lang,
         )
         zf.writestr("slide_tables/Table_2_Age_Burden_Slide_4k.png", slide_t2_png.getvalue())
+        plt.close("all")
 
-        slide_t2_pdf = render_slide_readable_table(
-            title="Table 2 — Age-Specific Burden Summary" if eff_lang == "en" else "ตารางที่ 2 — สรุปภาระโรคจำแนกตามกลุ่มอายุ",
-            subtitle=scope_label,
-            headers=t2_headers,
-            rows=t2_rows,
-            footnote=scope_ctx["denominator"]["reason_en" if eff_lang == "en" else "reason_th"],
-            theme=theme,
-            export_fmt="pdf",
-            lang=eff_lang,
-        )
-        zf.writestr("slide_tables/Table_2_Age_Burden_Slide.pdf", slide_t2_pdf.getvalue())
+        if include_vector:
+            slide_t2_pdf = render_slide_readable_table(
+                title="Table 2 — Age-Specific Burden Summary" if eff_lang == "en" else "ตารางที่ 2 — สรุปภาระโรคจำแนกตามกลุ่มอายุ",
+                subtitle=scope_label,
+                headers=t2_headers,
+                rows=t2_rows,
+                footnote=scope_ctx["denominator"]["reason_en" if eff_lang == "en" else "reason_th"],
+                theme=theme,
+                export_fmt="pdf",
+                lang=eff_lang,
+            )
+            zf.writestr("slide_tables/Table_2_Age_Burden_Slide.pdf", slide_t2_pdf.getvalue())
+            plt.close("all")
 
-        # 3. Styled Excel Workbook
-        excel_buf = create_styled_excel_workbook(cleaned_df, audit_trail, is_synthetic=is_synthetic, filters=eff_filters)
-        zf.writestr("data_tables/DDS_Surveillance_Summary_Workbook.xlsx", excel_buf.getvalue())
+        # 3. Styled Excel Workbook (reuses disk cache when available for extreme speed)
+        excel_disk = SESSIONS_DIR / "default_active_session" / "DDS_Surveillance_Report.xlsx"
+        if excel_disk.exists() and (raw_filters is None or raw_filters == filters):
+            try:
+                excel_bytes = excel_disk.read_bytes()
+            except Exception:
+                excel_bytes = create_styled_excel_workbook(cleaned_df, audit_trail, is_synthetic=is_synthetic, filters=eff_filters).getvalue()
+        else:
+            excel_bytes = create_styled_excel_workbook(cleaned_df, audit_trail, is_synthetic=is_synthetic, filters=eff_filters).getvalue()
+        zf.writestr("data_tables/DDS_Surveillance_Summary_Workbook.xlsx", excel_bytes)
 
         # 4. Aggregate CSV Tables (Tables 0 to 4)
         df_t0 = pd.DataFrame(generate_table_0_import_flow(audit_trail))
@@ -476,7 +492,22 @@ def create_presentation_pack_zip(
             },
             "audit_trail": audit_trail,
         }
-        zf.writestr("manifest_settings.json", json.dumps(pack_manifest, ensure_ascii=False, indent=2))
+        zf.writestr("manifest_settings.json", json.dumps(pack_manifest, ensure_ascii=False, indent=2, default=str))
+
+        readme_text = (
+            "========================================================================\r\n"
+            "DDS ONE-CLICK SURVEILLANCE SYSTEM - PRESENTATION PACK (4K UHD)\r\n"
+            "กลุ่มงานระบาดวิทยา สำนักงานสาธารณสุขจังหวัดพิษณุโลก\r\n"
+            "========================================================================\r\n\r\n"
+            "โครงสร้างไฟล์ในแพ็กเกจนำเสนอ:\r\n"
+            "1. figures_4k_png/ : แผนภูมิความละเอียดสูงพิเศษ 3840x2160 (16:9 UHD) ครบ 8 ภาพ\r\n"
+            "   (01 Epicurve, 02 Districts, 03 Age-Sex, 04 Rates, 05 Hospitalization,\r\n"
+            "    06 Thai vs Non-Thai, 07 Weekly Forecast, 08 Seasonal Comparison)\r\n"
+            "2. slide_tables/   : ตารางนำเสนอความละเอียดสูง Table 2 สำหรับวางบนสไลด์\r\n"
+            "3. data_tables/    : สมุดงาน DDS_Surveillance_Summary_Workbook.xlsx และตาราง CSV\r\n"
+            "4. manifest_settings.json : ข้อมูล Audit trail และพารามิเตอร์ตัวกรองทางระบาดวิทยา\r\n"
+        )
+        zf.writestr("README.txt", readme_text)
 
     zip_buf.seek(0)
     return zip_buf

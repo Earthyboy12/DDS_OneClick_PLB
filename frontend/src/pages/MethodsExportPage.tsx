@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   BookOpen,
   Download,
@@ -12,10 +12,23 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getExcelExportUrl, getPresentationPackUrl, getCsvExportUrl } from '../services/api';
+import { getExcelExportUrl, getPresentationPackUrl, getCsvExportUrl, downloadPresentationPackFile } from '../services/api';
 
 export const MethodsExportPage: React.FC = () => {
   const { lang, figLang, purgeSession, isLoaded } = useApp();
+  const [downloadingPack, setDownloadingPack] = useState<boolean>(false);
+
+  const handleDownloadPack = async () => {
+    if (downloadingPack) return;
+    setDownloadingPack(true);
+    try {
+      await downloadPresentationPackFile('light', figLang);
+    } catch (err: any) {
+      alert(err?.message || 'ดาวน์โหลดล้มเหลว กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      setDownloadingPack(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -33,14 +46,18 @@ export const MethodsExportPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href={getPresentationPackUrl('light', figLang)}
-            download
-            className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5"
+          <button
+            onClick={handleDownloadPack}
+            disabled={downloadingPack}
+            className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 disabled:opacity-60 cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>{lang === 'th' ? 'Presentation Pack (.ZIP)' : 'Presentation Pack'}</span>
-          </a>
+            <Download className={`w-3.5 h-3.5 ${downloadingPack ? 'animate-bounce' : ''}`} />
+            <span>
+              {downloadingPack
+                ? (lang === 'th' ? 'กำลังดาวน์โหลด...' : 'Downloading...')
+                : (lang === 'th' ? 'Presentation Pack (.ZIP)' : 'Presentation Pack')}
+            </span>
+          </button>
 
           <a
             href={getExcelExportUrl()}
@@ -211,14 +228,18 @@ export const MethodsExportPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <a
-            href={getPresentationPackUrl('light', figLang)}
-            download
-            className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold text-xs transition flex items-center gap-2 shadow-sm"
+          <button
+            onClick={handleDownloadPack}
+            disabled={downloadingPack}
+            className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold text-xs transition flex items-center gap-2 shadow-sm disabled:opacity-60 cursor-pointer"
           >
-            <Download className="w-4 h-4" />
-            <span>{lang === 'th' ? 'Presentation Pack ZIP' : 'Presentation Pack ZIP'}</span>
-          </a>
+            <Download className={`w-4 h-4 ${downloadingPack ? 'animate-bounce' : ''}`} />
+            <span>
+              {downloadingPack
+                ? (lang === 'th' ? 'กำลังเตรียมไฟล์ ZIP...' : 'Preparing ZIP...')
+                : (lang === 'th' ? 'Presentation Pack ZIP' : 'Presentation Pack ZIP')}
+            </span>
+          </button>
 
           <a
             href={getExcelExportUrl()}

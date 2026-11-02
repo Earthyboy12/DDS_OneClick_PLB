@@ -9,11 +9,12 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getStudioFigures, getFigureRenderUrl, getPresentationPackUrl } from '../services/api';
+import { getStudioFigures, getFigureRenderUrl, getPresentationPackUrl, downloadPresentationPackFile } from '../services/api';
 import { StudioFigureItem } from '../types';
 
 export const PresentationStudioPage: React.FC = () => {
   const { lang, figLang, setFigLang, isLoaded, filterVersion } = useApp();
+  const [downloadingPack, setDownloadingPack] = useState<boolean>(false);
   const [figures, setFigures] = useState<StudioFigureItem[]>([]);
   const [selectedFigId, setSelectedFigId] = useState<number>(1);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -94,18 +95,30 @@ export const PresentationStudioPage: React.FC = () => {
         </div>
 
         {/* Big One-Click Presentation Pack Button */}
-        <a
-          href={getPresentationPackUrl(theme, figLang)}
-          download
-          className="px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-xs font-bold shadow-md transition flex items-center gap-2"
+        <button
+          onClick={async () => {
+            if (downloadingPack) return;
+            setDownloadingPack(true);
+            try {
+              await downloadPresentationPackFile(theme, figLang);
+            } catch (err: any) {
+              alert(err?.message || 'ดาวน์โหลดล้มเหลว กรุณาลองใหม่อีกครั้ง');
+            } finally {
+              setDownloadingPack(false);
+            }
+          }}
+          disabled={downloadingPack}
+          className="px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-xs font-bold shadow-md transition flex items-center gap-2 disabled:opacity-60 cursor-pointer"
         >
-          <Download className="w-4 h-4" />
+          <Download className={`w-4 h-4 ${downloadingPack ? 'animate-bounce' : ''}`} />
           <span>
-            {lang === 'th'
-              ? `ดาวน์โหลดสไลด์ทั้งหมด (${figLang.toUpperCase()} .ZIP)`
-              : `Download All Slides (${figLang.toUpperCase()} .ZIP)`}
+            {downloadingPack
+              ? (lang === 'th' ? 'กำลังสร้างชุดสไลด์...' : 'Generating Pack...')
+              : (lang === 'th'
+                ? `ดาวน์โหลดสไลด์ทั้งหมด (${figLang.toUpperCase()} .ZIP)`
+                : `Download All Slides (${figLang.toUpperCase()} .ZIP)`)}
           </span>
-        </a>
+        </button>
       </div>
 
       {/* Main Studio Grid */}

@@ -419,6 +419,28 @@ export function getPresentationPackUrl(theme: string = 'light', lang: string = '
   return `${API_BASE}/studio/presentation-pack.zip?theme=${theme}&lang=${lang}`;
 }
 
+export async function downloadPresentationPackFile(theme: string = 'light', lang: string = 'th'): Promise<void> {
+  const url = getPresentationPackUrl(theme, lang);
+  const resp = await fetch(url);
+  if (!resp.ok) {
+    let msg = `Download failed (${resp.status})`;
+    try {
+      const err = await resp.json();
+      if (err.detail) msg = err.detail;
+    } catch (_) {}
+    throw new Error(msg);
+  }
+  const blob = await resp.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = `DDS_OneClick_Presentation_Pack_${lang.toUpperCase()}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(blobUrl);
+}
+
 export function getExcelExportUrl() {
   return `${API_BASE}/export/excel`;
 }

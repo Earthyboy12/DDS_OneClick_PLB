@@ -1,6 +1,9 @@
 import io
 import json
+import logging
 from pathlib import Path
+
+logger = logging.getLogger("dds_main")
 from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File, Query, HTTPException, Body
@@ -256,6 +259,12 @@ _autoload_persisted_session_if_available()
 def get_current_df_and_session() -> Tuple[pd.DataFrame, Dict[str, Any]]:
     session = session_store.get_session(ACTIVE_SESSION_ID)
     if not session or session.get("cleaned_df") is None:
+        try:
+            _autoload_persisted_session_if_available()
+            session = session_store.get_session(ACTIVE_SESSION_ID)
+        except Exception:
+            pass
+    if not session or session.get("cleaned_df") is None:
         raise HTTPException(
             status_code=400,
             detail="ยังไม่ได้นำเข้าชุดข้อมูล กรุณานำเข้าไฟล์ Excel/CSV หรือคลิก 'สร้างข้อมูลสังเคราะห์เพื่อทดสอบ' / No dataset loaded. Please import DDS Excel/CSV or generate synthetic data.",
@@ -296,6 +305,8 @@ def resolve_effective_filters(
         "lang": lang,
     }
     for k, v in overrides.items():
+        if hasattr(v, "default"):
+            v = v.default
         if v is not None:
             merged[k] = v
 
@@ -813,7 +824,7 @@ def commit_import_queue(payload: Dict[str, Any] = Body(default={})):
 def generate_synthetic_dataset():
     """Generates synthetic DDS workbook and loads into session using dds_reference.sqlite for codes & population."""
     dds_path = FIXTURES_DIR / "synthetic_dds_reference.xlsx"
-    dds_info = generate_synthetic_dds_workbook(dds_path, n_records=20172, trailing_blanks=150)
+    dds_info = generate_synthetic_dds_workbook(dds_path, n_records=3500, trailing_blanks=25)
 
     raw_df = dds_info.get("df")
     if raw_df is None:
@@ -2135,44 +2146,65 @@ def download_presentation_pack(
     nationality: Optional[str] = Query(None),
     patient_type: Optional[str] = Query(None),
     address_type: Optional[str] = Query(None),
+    include_vector: bool = Query(False),
 ):
-    df, session = get_current_df_and_session()
-    eff_filters = resolve_effective_filters(
-        session,
-        scope_mode=scope_mode,
-        province_code=province_code,
-        province_codes=province_codes,
-        district_code=district_code,
-        year=year,
-        sex=sex,
-        nationality=nationality,
-        patient_type=patient_type,
-        address_type=address_type,
-        lang=lang,
-    )
-    eff_lang = eff_filters["lang"]
-    zip_buf = create_presentation_pack_zip(
-        df,
-        session.get("audit_trail", {}),
-        theme=theme,
-        is_synthetic=session.get("is_synthetic", False),
-        raw_filters=eff_filters,
-        lang=eff_lang,
-    )
-    session_dir = SESSIONS_DIR / ACTIVE_SESSION_ID
-    session_dir.mkdir(parents=True, exist_ok=True)
-    zip_disk_path = session_dir / f"DDS_OneClick_Presentation_Pack_{eff_lang.upper()}.zip"
-    zip_disk_path.write_bytes(zip_buf.getvalue())
-    zip_buf.seek(0)
-    if "saved_files" not in session:
-        session["saved_files"] = {}
-    session["saved_files"][f"presentation_pack_zip_{eff_lang}"] = str(zip_disk_path)
+    try:
+        eff_theme = theme.default if hasattr(theme, "default") else theme
+        eff_inc_vec = bool(include_vector.default if hasattr(include_vector, "default") else include_vector)
+        df, session = get_current_df_and_session()
+        eff_filters = resolve_effective_filters(
+            session,
+            scope_mode=scope_mode,
+            province_code=province_code,
+            province_codes=province_codes,
+            district_code=district_code,
+            year=year,
+            sex=sex,
+            nationality=nationality,
+            patient_type=patient_type,
+            address_type=address_type,
+            lang=lang,
+        )
+        eff_lang = eff_filters["lang"]
+        zip_buf = create_presentation_pack_zip(
+            df,
+            session.get("audit_trail", {}),
+            theme=eff_theme,
+            is_synthetic=session.get("is_synthetic", False),
+            raw_filters=eff_filters,
+            lang=eff_lang,
+            include_vector=eff_inc_vec,
+        )
+        session_dir = SESSIONS_DIR / ACTIVE_SESSION_ID
+        session_dir.mkdir(parents=True, exist_ok=True)
+        zip_disk_path = session_dir / f"DDS_OneClick_Presentation_Pack_{eff_lang.upper()}.zip"
+        try:
+            zip_disk_path.write_bytes(zip_buf.getvalue())
+            zip_buf.seek(0)
+            if "saved_files" not in session:
+                session["saved_files"] = {}
+            session["saved_files"][f"presentation_pack_zip_{eff_lang}"] = str(zip_disk_path)
+        except Exception as e:
+            logger.warning(f"Notice: caching presentation pack to disk failed: {e}")
 
-    return StreamingResponse(
-        zip_buf,
-        media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="DDS_OneClick_Presentation_Pack_{eff_lang.upper()}.zip"'},
-    )
+        fname = f"DDS_OneClick_Presentation_Pack_{eff_lang.upper()}.zip"
+        return StreamingResponse(
+            zip_buf,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f'attachment; filename="{fname}"',
+                "Cache-Control": "no-cache",
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(f"Error generating presentation pack: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"เกิดข้อผิดพลาดในการสร้าง Presentation Pack: {str(exc)}",
+        )
 
 
 @app.get("/api/export/excel")
